@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>재미있는 MBTI 테스트</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f7ff;
+    margin: 0;
+    padding: 30px;
+    color: #222;
+  }
+  .container {
+    max-width: 850px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+  }
+  h1, h2 { text-align: center; }
+  .question {
+    margin: 20px 0;
+    padding: 15px;
+    background: #eef1ff;
+    border-radius: 12px;
+  }
+  button {
+    padding: 12px 20px;
+    margin: 8px;
+    border: none;
+    border-radius: 12px;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+  }
+  button:hover { background: #4b5fd8; }
+  .choice {
+    background: white;
+    color: #333;
+    border: 1px solid #aaa;
+  }
+  .selected {
+    background: #667eea;
+    color: white;
+  }
+  #result {
+    display: none;
+    text-align: center;
+    line-height: 1.7;
+  }
+  .emoji {
+    font-size: 70px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>✨ 간단 MBTI 테스트 ✨</h1>
+  <p style="text-align:center;">32개 질문으로 나의 성격 캐릭터를 확인해보자!</p>
+
+  <div id="quiz"></div>
+
+  <div style="text-align:center;">
+    <button onclick="showResult()">결과 확인하기</button>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+const questions = [
+  ["사람들과 함께 있으면 에너지가 생긴다.", "E", "I"],
+  ["혼자만의 시간이 꼭 필요하다.", "I", "E"],
+  ["처음 보는 사람과도 쉽게 대화한다.", "E", "I"],
+  ["조용한 공간에서 집중이 잘 된다.", "I", "E"],
+  ["모임에서 분위기를 주도하는 편이다.", "E", "I"],
+  ["많은 사람보다 친한 몇 명이 좋다.", "I", "E"],
+  ["말하면서 생각이 정리된다.", "E", "I"],
+  ["생각을 정리한 뒤 말하는 편이다.", "I", "E"],
+
+  ["현실적이고 구체적인 설명이 좋다.", "S", "N"],
+  ["상상하거나 가능성을 떠올리는 게 좋다.", "N", "S"],
+  ["경험한 것을 중요하게 생각한다.", "S", "N"],
+  ["새로운 아이디어를 떠올리는 걸 좋아한다.", "N", "S"],
+  ["세부 사항을 잘 기억한다.", "S", "N"],
+  ["큰 그림을 먼저 보는 편이다.", "N", "S"],
+  ["검증된 방법이 편하다.", "S", "N"],
+  ["새로운 방식에 도전하고 싶다.", "N", "S"],
+
+  ["결정할 때 논리와 사실을 우선한다.", "T", "F"],
+  ["결정할 때 사람의 감정을 고려한다.", "F", "T"],
+  ["비판을 받아도 개선점이면 괜찮다.", "T", "F"],
+  ["상대가 상처받지 않는 표현이 중요하다.", "F", "T"],
+  ["문제 해결이 공감보다 먼저다.", "T", "F"],
+  ["공감과 위로가 먼저 필요하다고 생각한다.", "F", "T"],
+  ["원칙과 기준을 중요하게 생각한다.", "T", "F"],
+  ["관계의 조화를 중요하게 생각한다.", "F", "T"],
+
+  ["계획을 세우고 지키는 편이다.", "J", "P"],
+  ["상황에 따라 유연하게 움직인다.", "P", "J"],
+  ["마감 전에 미리 끝내야 마음이 편하다.", "J", "P"],
+  ["마감 직전에 집중력이 올라간다.", "P", "J"],
+  ["정리된 일정표가 있으면 좋다.", "J", "P"],
+  ["즉흥적인 약속도 재밌다.", "P", "J"],
+  ["해야 할 일을 목록으로 관리한다.", "J", "P"],
+  ["그때그때 끌리는 대로 하는 편이다.", "P", "J"]
+];
+
+const results = {
+  INTJ:["🧙‍♂️","전략가","장점: 목표가 뚜렷하고 분석력이 좋음","단점: 차갑게 보일 수 있음"],
+  INTP:["🧪","아이디어 연구가","장점: 호기심과 창의력이 뛰어남","단점: 실행이 늦어질 수 있음"],
+  ENTJ:["🦁","리더형 지휘관","장점: 추진력과 리더십이 강함","단점: 너무 단호해 보일 수 있음"],
+  ENTP:["🦊","토론 즐기는 발명가","장점: 재치 있고 도전적임","단점: 쉽게 싫증낼 수 있음"],
+
+  INFJ:["🌙","조용한 조언가","장점: 통찰력과 배려심이 깊음","단점: 혼자 고민을 쌓기 쉬움"],
+  INFP:["🌸","감성적인 몽상가","장점: 따뜻하고 상상력이 풍부함","단점: 현실 결정이 어려울 수 있음"],
+  ENFJ:["🌞","따뜻한 선도자","장점: 사람을 이끄는 힘이 있음","단점: 남을 너무 신경 쓸 수 있음"],
+  ENFP:["🎈","자유로운 에너지볼","장점: 밝고 아이디어가 많음","단점: 집중력이 흔들릴 수 있음"],
+
+  ISTJ:["📘","성실한 관리자","장점: 책임감 있고 꼼꼼함","단점: 변화에 느릴 수 있음"],
+  ISFJ:["🧸","다정한 수호자","장점: 세심하고 배려심이 많음","단점: 거절을 어려워함"],
+  ESTJ:["📢","현실적인 관리자","장점: 체계적이고 실행력이 좋음","단점: 융통성이 부족해 보일 수 있음"],
+  ESFJ:["🍪","친절한 분위기 메이커","장점: 사교적이고 책임감 있음","단점: 인정 욕구가 강할 수 있음"],
+
+  ISTP:["🔧","만능 해결사","장점: 침착하고 실용적임","단점: 감정 표현이 적을 수 있음"],
+  ISFP:["🎨","감성 예술가","장점: 섬세하고 자유로움","단점: 계획성이 약할 수 있음"],
+  ESTP:["🏄","즉흥적인 모험가","장점: 행동력이 빠르고 활발함","단점: 충동적일 수 있음"],
+  ESFP:["🎤","무대 위 스타","장점: 밝고 분위기를 잘 살림","단점: 장기 계획이 약할 수 있음"]
+};
+
+const quiz = document.getElementById("quiz");
+let answers = [];
+
+questions.forEach((q, index) => {
+  quiz.innerHTML += `
+    <div class="question">
+      <b>Q${index + 1}. ${q[0]}</b><br>
+      <button class="choice" onclick="selectAnswer(${index}, '${q[1]}', this)">그렇다</button>
+      <button class="choice" onclick="selectAnswer(${index}, '${q[2]}', this)">아니다</button>
+    </div>
+  `;
+});
+
+function selectAnswer(index, type, btn) {
+  answers[index] = type;
+
+  const buttons = btn.parentElement.querySelectorAll("button");
+  buttons.forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+}
+
+function showResult() {
+  if (answers.length < questions.length || answers.includes(undefined)) {
+    alert("모든 질문에 답해줘!");
+    return;
+  }
+
+  const score = { E:0, I:0, S:0, N:0, T:0, F:0, J:0, P:0 };
+
+  answers.forEach(a => score[a]++);
+
+  const mbti =
+    (score.E >= score.I ? "E" : "I") +
+    (score.S >= score.N ? "S" : "N") +
+    (score.T >= score.F ? "T" : "F") +
+    (score.J >= score.P ? "J" : "P");
+
+  const data = results[mbti];
+
+  document.getElementById("quiz").style.display = "none";
+  document.querySelector("button").style.display = "none";
+
+  const resultBox = document.getElementById("result");
+  resultBox.style.display = "block";
+  resultBox.innerHTML = `
+    <div class="emoji">${data[0]}</div>
+    <h2>당신의 MBTI는 ${mbti}!</h2>
+    <h3>${data[1]}</h3>
+    <p>${data[2]}</p>
+    <p>${data[3]}</p>
+    <button onclick="location.reload()">다시 하기</button>
+  `;
+}
+</script>
+
+</body>
+</html>
